@@ -33,15 +33,15 @@ describe('test getContacts builds queries correctly', () => {
 
   it('works with: no contacts filter', () => {
     const query = getContacts(assignment, undefined, organization, campaign)
-    expect(query.toString()).toBe(
-      "select * from \"campaign_contact\" where \"assignment_id\" = 1 order by message_status DESC, updated_at"
+    expect(query.toString()).toMatch(
+      /^select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 order by message_status DESC, updated_at$/
     )
   }) // it
 
   it('works with: contacts filter, include past due, message status', () => {
     const query = getContacts(assignment, { includePastDue: true }, organization, campaign)
-    expect(query.toString()).toBe(
-       "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+    expect(query.toString()).toMatch(
+       /^select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
@@ -52,8 +52,8 @@ describe('test getContacts builds queries correctly', () => {
       organization,
       campaign
     )
-    expect(query.toString()).toBe(
-       "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+    expect(query.toString()).toMatch(
+       /^select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
@@ -65,13 +65,13 @@ describe('test getContacts builds queries correctly', () => {
       past_due_campaign
     )
     // this should be empty because the query is empty and thus we return []
-    expect(query.toString()).toBe('')
+    expect(query.toString()).toMatch('')
   }) // it
 
   it('works with: contacts filter, exclude past due, message status one other', () => {
     const query = getContacts(assignment, { messageStatus: 'convo' }, organization, campaign)
-    expect(query.toString()).toBe(
-      "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"message_status\" in ('convo') order by message_status DESC, updated_at DESC"
+    expect(query.toString()).toMatch(
+      /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]message_status[`"] in \('convo'\) order by message_status DESC, updated_at DESC/
     )
   }) // it
 
@@ -82,29 +82,29 @@ describe('test getContacts builds queries correctly', () => {
       organization,
       campaign
     )
-    expect(query.toString()).toBe(
-       "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"message_status\" in ('convo', 'messageReceived') order by message_status DESC, updated_at"
+    expect(query.toString()).toMatch(
+       /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]message_status[`"] in \('convo', 'messageReceived'\) order by message_status DESC, updated_at/
     )
   }) // it
 
   it('works with: contacts filter, exclude past due, no message status, campaign is past due', () => {
     const query = getContacts(assignment, {}, organization, past_due_campaign)
-    expect(query.toString()).toBe(
-      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\') order by message_status DESC, updated_at'
+    expect(query.toString()).toMatch(
+      /select \* from "campaign_contact" where "assignment_id" = 1 and "message_status" in \('needsResponse'\) order by message_status DESC, updated_at/
     )
   }) // it
 
   it('works with: contacts filter, exclude past due, no message status, campaign not past due', () => {
     const query = getContacts(assignment, {}, organization, campaign)
-    expect(query.toString()).toBe(
-      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\') order by message_status DESC, updated_at'
+    expect(query.toString()).toMatch(
+      /select \* from "campaign_contact" where "assignment_id" = 1 and "message_status" in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
   it('works with: forCount, contacts filter, exclude past due, no message status, campaign not past due', () => {
     const query = getContacts(assignment, {}, organization, campaign, true)
-    expect(query.toString()).toBe(
-      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\')'
+    expect(query.toString()).toMatch(
+      /select \* from "campaign_contact" where "assignment_id" = 1 and "message_status" in \('needsResponse', 'needsMessage'\)/
     )
   }) // it
 }) // describe
@@ -136,7 +136,7 @@ describe('test getContacts timezone stuff only', () => {
     timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(true)
     var query = getContacts(assignment, { validTimezone: true }, organization, campaign)
     expect(query.toString()).toMatch(
-       "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"timezone_offset\" in ('-5_1', '') and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+       /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]timezone_offset[`"] in \('-5_1', ''\) and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
@@ -144,7 +144,7 @@ describe('test getContacts timezone stuff only', () => {
     timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(true)
     var query = getContacts(assignment, { validTimezone: false }, organization, campaign)
     expect(query.toString()).toMatch(
-       "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"timezone_offset\" in ('-4_1') and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+       /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]timezone_offset[`"] in \('-4_1'\) and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
@@ -152,7 +152,7 @@ describe('test getContacts timezone stuff only', () => {
     timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(false)
     var query = getContacts(assignment, { validTimezone: true }, organization, campaign)
     expect(query.toString()).toMatch(
-      "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"timezone_offset\" in ('-5_1') and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+      /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]timezone_offset[`"] in \('-5_1'\) and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
@@ -160,28 +160,31 @@ describe('test getContacts timezone stuff only', () => {
     timezones.defaultTimezoneIsBetweenTextingHours.mockReturnValueOnce(false)
     var query = getContacts(assignment, { validTimezone: false }, organization, campaign)
     expect(query.toString()).toMatch(
-      "select * from \"campaign_contact\" where \"assignment_id\" = 1 and \"timezone_offset\" in ('-4_1', '') and \"message_status\" in ('needsResponse', 'needsMessage') order by message_status DESC, updated_at"
+      /select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1 and [`"]timezone_offset[`"] in \('-4_1', ''\) and [`"]message_status[`"] in \('needsResponse', 'needsMessage'\) order by message_status DESC, updated_at/
     )
   }) // it
 
   it('returns the correct query -- no contacts filter', () => {
     var query = getContacts(assignment, null, organization, campaign)
     expect(query.toString()).toMatch(
-      /^select \* from \"campaign_contact\" where \"assignment_id\" = 1.*/
+      /^select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1.*/
     )
   }) // it
 
   it('returns the correct query -- no validTimezone property in contacts filter', () => {
     var query = getContacts(assignment, {}, organization, campaign)
     expect(query.toString()).toMatch(
-      /^select \* from \"campaign_contact\" where \"assignment_id\" = 1.*/
+      /^select \* from [`"]campaign_contact[`"] where [`"]assignment_id[`"] = 1.*/
     )
   }) // it
 
   it('returns the correct query -- validTimezone property is null', () => {
     var query = getContacts(assignment, { validTimezone: null }, organization, campaign)
     expect(query.toString()).toMatch(
-      /^select \* from \"campaign_contact\" where \"assignment_id\" = 1.*/
+      /^select \* from .campaign_contact. where .assignment_id. = 1.*/
+    )
+    expect(query.toString()).not.toMatch(
+      /timezone_offset/
     )
   }) // it
 }) // describe
